@@ -1,0 +1,456 @@
+ # MFDS 항암제 승인현황 대시보드 - 구현 문서
+ 
+ > 식품의약품안전처(MFDS) 항암제 허가 현황을 시각화하는 React 기반 대시보드 애플리케이션
+ 
+ **문서 버전**: 2.1  
+ **최종 업데이트**: 2026-02-05
+ 
+ ---
+ 
+ ## 📋 목차
+ 
+ 1. [프로젝트 개요](#1-프로젝트-개요)
+ 2. [기술 스택](#2-기술-스택)
+ 3. [데이터 수집 현황](#3-데이터-수집-현황)
+ 4. [공공데이터 API 연동](#4-공공데이터-api-연동)
+ 5. [데이터 처리 로직](#5-데이터-처리-로직)
+ 6. [컴포넌트 아키텍처](#6-컴포넌트-아키텍처)
+ 7. [주요 기능](#7-주요-기능)
+ 8. [프로젝트 구조](#8-프로젝트-구조)
+ 
+ ---
+ 
+ ## 1. 프로젝트 개요
+ 
+ ### 1.1 목적
+ - 식품의약품안전처의 항암제 허가 현황을 실시간으로 모니터링
+ - 데이터 시각화를 통한 승인 트렌드 분석
+ - Excel 업로드/다운로드를 통한 데이터 관리
+ 
+ ### 1.2 데이터 범위
+ | 항목 | 내용 |
+ |------|------|
+ | **데이터 기간** | 2025-12-01 ~ 2026-01-28 |
+ | **총 수집 품목** | 13건 |
+ | **데이터 소스** | 공공데이터포털(data.go.kr) API + 수동 검증 |
+ 
+ ### 1.3 허가유형별 현황
+ | 허가유형 | 품목 수 | 비율 |
+ |----------|---------|------|
+ | 신약 | 4건 | 30.8% |
+ | 제네릭 | 6건 | 46.1% |
+ | 희귀의약품 | 3건 | 23.1% |
+ 
+ ---
+ 
+ ## 2. 기술 스택
+ 
+ ### 2.1 Frontend
+ | 기술 | 버전 | 용도 |
+ |------|------|------|
+ | React | 18.3.1 | UI 프레임워크 |
+ | TypeScript | 5.x | 정적 타입 검사 |
+ | Vite | 5.x | 빌드 도구 |
+ | Tailwind CSS | 3.x | 유틸리티 기반 스타일링 |
+ | shadcn/ui | latest | UI 컴포넌트 라이브러리 |
+ 
+ ### 2.2 데이터 시각화
+ | 라이브러리 | 버전 | 용도 |
+ |------------|------|------|
+ | Recharts | 2.15.4 | 차트 컴포넌트 (파이, 바, 도넛, 영역) |
+ | date-fns | 3.6.0 | 날짜 포맷팅 및 처리 |
+ 
+ ### 2.3 데이터 처리
+ | 라이브러리 | 버전 | 용도 |
+ |------------|------|------|
+ | xlsx | 0.18.5 | Excel 파일 파싱 |
+ | xlsx-js-style | 1.2.0 | 스타일 적용 Excel 내보내기 |
+ 
+ ### 2.4 Backend (Lovable Cloud)
+ | 기능 | 구현 방식 |
+ |------|----------|
+ | Edge Functions | Deno 기반 서버리스 함수 |
+ | 외부 API 호출 | 공공데이터포털 API 중계 |
+ | 환경변수 관리 | Secrets (API 키 보호) |
+ 
+ ### 2.5 상태 관리 & 라우팅
+ | 라이브러리 | 버전 | 용도 |
+ |------------|------|------|
+ | @tanstack/react-query | 5.83.0 | 서버 상태 관리 |
+ | react-router-dom | 6.30.1 | 클라이언트 라우팅 |
+ 
+ ---
+ 
+ ## 3. 데이터 수집 현황
+ 
+ ### 3.1 품목별 데이터 소스 상세
+ 
+ 2025-12-01 ~ 2026-01-28 기간 동안 수집된 13건의 항암제 승인 데이터입니다.
+ 
+ | No | 제품명 | 업체명 | 허가일 | 주성분 | 암종 | 허가유형 | 제조/수입 | 데이터 소스 |
+ |----|--------|--------|--------|--------|------|----------|-----------|-------------|
+ | 1 | 오티닙정40mg | (주)종근당 | 2026-01-27 | 오시머티닙메실산염 | 폐암 | 제네릭 | 제조 | API+수동확인 |
+ | 2 | 오티닙정80mg | (주)종근당 | 2026-01-27 | 오시머티닙메실산염 | 폐암 | 제네릭 | 제조 | API+수동확인 |
+ | 3 | 엔잘엑스연질캡슐40mg | 한국메나리니(주) | 2026-01-27 | 엔잘루타미드 | 전립선암 | 제네릭 | 수입 | 공공API |
+ | 4 | 반플리타정17.7mg | 한국다이이찌산쿄(주) | 2026-01-26 | 퀴자티닙염산염 | 급성골수성백혈병 | 신약 | 수입 | 공공API |
+ | 5 | 반플리타정26.5mg | 한국다이이찌산쿄(주) | 2026-01-26 | 퀴자티닙염산염 | 급성골수성백혈병 | 신약 | 수입 | 공공API |
+ | 6 | 보라니고정10mg | 한국세르비에(주) | 2026-01-13 | 보라시데닙시트르산 | 뇌종양(신경교종) | 희귀 | 수입 | 공공API |
+ | 7 | 보라니고정40mg | 한국세르비에(주) | 2026-01-13 | 보라시데닙시트르산 | 뇌종양(신경교종) | 희귀 | 수입 | 공공API |
+ | 8 | 엔잘루타연질캡슐40mg | 한올바이오파마(주) | 2026-01-07 | 엔잘루타미드 | 전립선암 | 제네릭 | 제조 | 공공API |
+ | 9 | 엔자덱스연질캡슐40mg | 대원제약(주) | 2025-12-23 | 엔잘루타미드 | 전립선암 | 제네릭 | 제조 | 공공API |
+ | 10 | 브렌랩주70mg | (주)글락소스미스클라인 | 2025-12-22 | 벨란타맙마포도틴 | 다발성골수종 | 신약 | 수입 | API+수동추가 |
+ | 11 | 브렌랩주100mg | (주)글락소스미스클라인 | 2025-12-22 | 벨란타맙마포도틴 | 다발성골수종 | 신약 | 수입 | API+수동추가 |
+ | 12 | 엘라히어주 | 한국애브비(주) | 2025-12-19 | 미르베툭시맙소라브탄신 | 난소암 | 희귀 | 수입 | API+수동추가 |
+ | 13 | 풀베란트프리필드주사 | 동국제약(주) | 2025-12-08 | 풀베스트란트 | 유방암 | 제네릭 | 제조 | 공공API |
+ 
+ ### 3.2 데이터 소스 분류
+ 
+ | 소스 유형 | 설명 | 적용 품목 수 |
+ |-----------|------|-------------|
+ | **공공API** | DrugPrdtPrmsnInfoService07 API 자동 수집 | 8건 |
+ | **API+수동확인** | API 색인 지연으로 수동 정보 확인 | 2건 |
+ | **API+수동추가** | API 일부 정보만 조회, MFDS 사이트 보완 | 3건 |
+ 
+ ### 3.3 암종별 분포
+ 
+ | 암종 | 품목 수 | 작용기전 | 대표 제품 |
+ |------|---------|----------|-----------|
+ | 폐암 | 2건 | EGFR TKI | 오티닙정 |
+ | 전립선암 | 4건 | 안드로겐 수용체 억제제 | 엔잘엑스, 엔잘루타, 엔자덱스 |
+ | 급성골수성백혈병 | 2건 | FLT3 억제제 | 반플리타정 |
+ | 뇌종양(신경교종) | 2건 | IDH 억제제 | 보라니고정 |
+ | 다발성골수종 | 2건 | BCMA 표적 ADC | 브렌랩주 |
+ | 난소암 | 1건 | FRα 표적 ADC | 엘라히어주 |
+ | 유방암 | 1건 | SERD | 풀베란트주사 |
+ 
+ ---
+ 
+ ## 4. 공공데이터 API 연동
+ 
+ ### 4.1 API 정보
+ 
+ | 항목 | 내용 |
+ |------|------|
+ | **서비스명** | 의약품 품목허가 상세정보 조회 서비스 |
+ | **서비스 ID** | DrugPrdtPrmsnInfoService07 |
+ | **제공 기관** | 식품의약품안전처 |
+ | **포털** | [공공데이터포털](https://data.go.kr) |
+ | **엔드포인트** | `https://apis.data.go.kr/1471000/DrugPrdtPrmsnInfoService07/getDrugPrdtPrmsnInq07` |
+ 
+ ### 4.2 API 호출 아키텍처
+ 
+ ```
+ ┌─────────────────┐     ┌──────────────────────┐     ┌─────────────────┐
+ │   React Client  │────▶│   Edge Function      │────▶│  data.go.kr API │
+ │   (Frontend)    │◀────│   (Lovable Cloud)    │◀────│   (공공데이터)   │
+ └─────────────────┘     └──────────────────────┘     └─────────────────┘
+         │                         │
+         │                         ├── API 키 보호
+         │                         ├── CORS 처리
+         │                         └── 데이터 필터링/변환
+         │
+         └── supabase.functions.invoke('fetch-drug-data')
+ ```
+ 
+ ### 4.3 요청 파라미터
+ 
+ | 파라미터 | 필수 | 설명 | 예시 |
+ |----------|------|------|------|
+ | serviceKey | Y | 공공데이터포털 인증키 | (서비스키) |
+ | pageNo | N | 페이지 번호 | 1 |
+ | numOfRows | N | 페이지당 건수 | 100 |
+ | type | N | 응답 형식 | json |
+ | item_name | N | 제품명 검색 | 키트루다 |
+ 
+ ### 4.4 응답 필드 매핑
+ 
+ | API 필드 | 대시보드 컬럼 | 타입 | 설명 |
+ |----------|--------------|------|------|
+ | ITEM_SEQ | id | string | 품목기준코드 |
+ | ITEM_NAME | drugName | string | 제품명 |
+ | ENTP_NAME | company | string | 업체명 |
+ | ITEM_PERMIT_DATE | approvalDate | string | 허가일 (YYYYMMDD→YYYY-MM-DD) |
+ | MAIN_ITEM_INGR | genericName | string | 주성분 |
+ | EE_DOC_DATA | indication | string | 적응증 (XML 파싱) |
+ | CLASS_NAME | className | string | 약효분류 |
+ 
+ ### 4.5 Edge Function 구현
+ 
+ ```typescript
+ // supabase/functions/fetch-drug-data/index.ts
+ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+ 
+ const corsHeaders = {
+   'Access-Control-Allow-Origin': '*',
+   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, ...',
+ };
+ 
+ serve(async (req) => {
+   if (req.method === 'OPTIONS') {
+     return new Response(null, { headers: corsHeaders });
+   }
+ 
+   const apiKey = Deno.env.get('DATA_GO_KR_API_KEY');
+   // ... API 호출 및 데이터 처리
+ });
+ ```
+ 
+ ### 4.6 검색 키워드 전략
+ 
+ Edge Function에서 다음 키워드를 **병렬 검색**하여 항암제 데이터를 수집합니다:
+ 
+ ```typescript
+ const SEARCH_KEYWORDS = [
+   // 면역항암제
+   '키트루다', '옵디보', '테센트릭', '임핀지',
+   
+   // 표적항암제
+   '허쥬마', '타그리소', '렌비마', '린파자', '이브란스',
+   
+   // ADC (항체-약물 접합체)
+   '엔허투', '브렌랩', '엘라히어', 'ADC',
+   
+   // 신규 승인 품목
+   '보라니고', '반플리타', '퀴자티닙', '보라시데닙',
+   '오시머티닙', '오티닙', '엔잘루타미드', '풀베스트란트',
+   '벨란타맙', '미르베툭시맙', '골수종',
+ ];
+ ```
+ 
+ ---
+ 
+ ## 5. 데이터 처리 로직
+ 
+ ### 5.1 항암제 필터링
+ 
+ #### 제외 키워드 (오탐 방지)
+ ```typescript
+ const EXCLUDE_KEYWORDS = [
+   '암로디핀', 'amlodipine',   // 고혈압약 (암 접미사 포함)
+   '텔미사르탄', 'telmisartan',
+   '로사르탄', 'losartan',
+   '발사르탄', 'valsartan',
+   '올메사르탄',
+ ];
+ ```
+ 
+ #### 포함 키워드 (항암제 식별)
+ ```typescript
+ const ANTICANCER_KEYWORDS = [
+   // 항암 명칭
+   '항암', '백혈병', 'leukemia', '림프종', 'lymphoma', '골수종', 'myeloma',
+   
+   // 성분 접미사 패턴
+   'mab',      // 단클론항체 (트라스투주맙, 니볼루맙)
+   'nib',      // 티로신키나제억제제 (이마티닙, 게피티닙)
+   'taxel',    // 탁산계 (파클리탁셀)
+   'platin',   // 백금화합물 (시스플라틴)
+   'ciclib',   // CDK4/6 억제제 (팔보시클립)
+   
+   // 암종
+   '폐암', '유방암', '대장암', '위암', '간암', '췌장암', '전립선암', '난소암',
+ ];
+ ```
+ 
+ ### 5.2 암종 자동 분류
+ 
+ ```typescript
+ function extractCancerType(indication: string, productName: string): string {
+   const combined = `${indication} ${productName}`.toLowerCase();
+   
+   const cancerTypes: Record<string, string[]> = {
+     '폐암': ['폐암', '비소세포폐암', 'nsclc', 'lung cancer'],
+     '유방암': ['유방암', 'breast cancer', 'her2'],
+     '전립선암': ['전립선암', 'prostate', '엔잘루타미드'],
+     '뇌종양': ['신경교종', '교모세포종', 'glioma', '보라시데닙'],
+     '혈액암': ['백혈병', 'leukemia', 'aml', '림프종', '골수종', 'myeloma'],
+     // ...
+   };
+   
+   for (const [type, keywords] of Object.entries(cancerTypes)) {
+     if (keywords.some(k => combined.includes(k))) return type;
+   }
+   return '기타';
+ }
+ ```
+ 
+ ### 5.3 데이터 검증 프로세스
+ 
+ ```
+ ┌───────────────────────────────────────────────────────────────┐
+ │                    데이터 수집 및 검증 흐름                      │
+ ├───────────────────────────────────────────────────────────────┤
+ │                                                               │
+ │  1. 공공데이터 API 호출                                         │
+ │     └─▶ Edge Function에서 키워드별 병렬 검색                    │
+ │     └─▶ 중복 제거 (ITEM_SEQ 기준)                              │
+ │                                                               │
+ │  2. 항암제 필터링                                               │
+ │     └─▶ 제외 키워드 확인 (오탐 방지)                            │
+ │     └─▶ 포함 키워드 매칭                                       │
+ │                                                               │
+ │  3. 데이터 보완                                                 │
+ │     └─▶ API 미수록 품목: nedrug.mfds.go.kr 교차 확인            │
+ │     └─▶ 상세 정보 누락 시: 수동 데이터 추가                       │
+ │                                                               │
+ │  4. 암종 자동 분류                                              │
+ │     └─▶ 적응증 텍스트에서 암종 키워드 추출                        │
+ │     └─▶ 제품명/성분명 기반 보조 분류                             │
+ │                                                               │
+ │  5. 정적 데이터 통합                                            │
+ │     └─▶ src/data/recentApprovals.ts에 최종 저장                 │
+ │                                                               │
+ └───────────────────────────────────────────────────────────────┘
+ ```
+ 
+ ---
+ 
+ ## 6. 컴포넌트 아키텍처
+ 
+ ### 6.1 페이지 구조
+ 
+ ```
+ src/pages/Index.tsx (메인 대시보드)
+ │
+ ├── Header.tsx
+ │   └── 타이틀, 로고
+ │
+ ├── FilterPanel.tsx
+ │   ├── 날짜 범위 (DatePicker)
+ │   ├── 암종 필터 (Select)
+ │   ├── 제조/수입 필터 (Select)
+ │   ├── 업체명 필터 (Select)
+ │   ├── 허가유형 필터 (Select)
+ │   └── 작용기전 필터 (Select)
+ │
+ ├── UserGuide.tsx
+ │   └── 사용방법 아코디언
+ │
+ ├── ChartGrid.tsx
+ │   ├── ApprovalChart (암종별 파이차트)
+ │   ├── ApprovalChart (업체별 도넛차트)
+ │   ├── ApprovalChart (허가유형별 바차트)
+ │   └── ApprovalChart (월별 추이 영역차트)
+ │
+ └── DataTable.tsx
+     ├── 검색 입력
+     ├── Excel 다운로드 버튼
+     └── 상세 테이블 (12개 컬럼)
+ ```
+ 
+ ### 6.2 데이터 테이블 컬럼
+ 
+ | 컬럼 | 너비 | 설명 |
+ |------|------|------|
+ | 품목기준코드 | 120px | MFDS 링크 연결 |
+ | 제품명 | 200px | 클릭시 상세페이지 |
+ | 업체명 | 160px | - |
+ | 허가일 | 100px | YYYY-MM-DD |
+ | 주성분 | 180px | 성분명 |
+ | 적응증 | 280px+ | 60자 초과시 말줄임 |
+ | 암종 | 100px | 분류된 암종 |
+ | 허가유형 | 100px | 컬러 배지 |
+ | 제조/수입 | 80px | - |
+ | 제조국 | 100px | - |
+ | 제조업체 | 180px | 40자 초과시 말줄임 |
+ | 비고 | 120px | 작용기전 등 |
+ 
+ ---
+ 
+ ## 7. 주요 기능
+ 
+ ### 7.1 Excel 내보내기
+ 
+ ```typescript
+ // src/utils/excelExport.ts
+ export const exportToExcel = (data, options) => {
+   const wb = XLSX.utils.book_new();
+   
+   // 시트 1: 요약
+   // 시트 2: 상세 데이터
+   
+   // 스타일 적용
+   // - 헤더: 12pt 굵은 글씨, 그레이 배경(#374151)
+   // - 데이터: 11pt, 테두리 그리드
+   // - 행 높이: 40pt
+ };
+ ```
+ 
+ ### 7.2 필터링 시스템
+ 
+ - 날짜 범위 (시작일 ~ 종료일)
+ - 암종 (폐암, 유방암, 전립선암 등)
+ - 제조/수입 구분
+ - 업체명
+ - 허가유형 (신약, 제네릭, 희귀의약품)
+ - 작용기전 (MoA)
+ 
+ ### 7.3 테이블 내 검색
+ 
+ ```typescript
+ const filteredData = useMemo(() => {
+   const term = searchTerm.toLowerCase();
+   return data.filter((drug) =>
+     drug.drugName.toLowerCase().includes(term) ||
+     drug.genericName.toLowerCase().includes(term) ||
+     drug.company.toLowerCase().includes(term) ||
+     drug.indication.toLowerCase().includes(term)
+   );
+ }, [data, searchTerm]);
+ ```
+ 
+ ---
+ 
+ ## 8. 프로젝트 구조
+ 
+ ```
+ mfds-cancer-monitor/
+ │
+ ├── docs/
+ │   └── IMPLEMENTATION.md      # 본 문서
+ │
+ ├── src/
+ │   ├── components/
+ │   │   ├── ApprovalChart.tsx  # 차트 컴포넌트
+ │   │   ├── ChartGrid.tsx      # 차트 그리드 레이아웃
+ │   │   ├── DataTable.tsx      # 데이터 테이블
+ │   │   ├── FilterPanel.tsx    # 필터 패널
+ │   │   ├── Header.tsx         # 헤더
+ │   │   ├── StatCard.tsx       # 통계 카드
+ │   │   ├── UserGuide.tsx      # 사용 안내
+ │   │   └── ui/                # shadcn/ui 컴포넌트
+ │   │
+ │   ├── data/
+ │   │   ├── drugData.ts        # 타입 정의 & 암종 목록
+ │   │   └── recentApprovals.ts # 정적 데이터 (13건)
+ │   │
+ │   ├── hooks/
+ │   │   └── useDrugData.ts     # 데이터 관리 훅
+ │   │
+ │   ├── pages/
+ │   │   └── Index.tsx          # 메인 대시보드
+ │   │
+ │   └── utils/
+ │       ├── excelExport.ts     # Excel 내보내기
+ │       └── excelParser.ts     # Excel 파싱
+ │
+ └── supabase/
+     └── functions/
+         └── fetch-drug-data/   # API 호출 Edge Function
+             └── index.ts
+ ```
+ 
+ ---
+ 
+ ## 참조 링크
+ 
+ | 출처 | URL | 용도 |
+ |------|-----|------|
+ | 공공데이터포털 | https://data.go.kr | API 키 발급, 서비스 문서 |
+ | 식약처 의약품안전나라 | https://nedrug.mfds.go.kr | 품목 상세정보 검증 |
+ | 식약처 허가 공고 | https://mfds.go.kr | 신규 허가 품목 확인 |
+ | GitHub 저장소 | https://github.com/Lucy1315/mfds-cancer-monitor | 소스 코드 |
+ 
+ ---
+ 
+ *© 2026 MFDS 항암제 승인현황 대시보드*
