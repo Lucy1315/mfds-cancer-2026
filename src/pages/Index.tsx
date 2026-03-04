@@ -32,7 +32,7 @@ const Index = () => {
   // 필터 상태
   const [filters, setFilters] = useState<FilterState>({
     startDate: new Date('2025-12-01'),
-    endDate: new Date('2026-02-26'),
+    endDate: new Date('2026-02-27'),
     cancerType: '전체',
     manufactureType: '전체',
     company: '전체',
@@ -131,7 +131,7 @@ const Index = () => {
   const handleReset = useCallback(() => {
     setFilters({
       startDate: new Date('2025-12-01'),
-      endDate: new Date('2026-02-26'),
+      endDate: new Date('2026-02-27'),
       cancerType: '전체',
       manufactureType: '전체',
       company: '전체',
@@ -311,7 +311,7 @@ const Index = () => {
         {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground pt-8 mt-8 border-t">
           <p>본 데이터는 식품의약품안전처 공개자료(공공데이터포털)를 기반으로 제작되었습니다.</p>
-          <p className="mt-1">마지막 업데이트: 2026년 2월 12일</p>
+          <p className="mt-1">마지막 업데이트: 2026년 2월 27일</p>
         </footer>
       </main>
 

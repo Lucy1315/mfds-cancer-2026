@@ -1,9 +1,10 @@
 import * as XLSX from 'xlsx';
 import { DrugApproval } from '@/data/drugData';
+import { ExtendedDrugApproval } from '@/data/recentApprovals';
 import { toast } from '@/hooks/use-toast';
 
 export interface ParsedDrugData {
-  drugs: DrugApproval[];
+  drugs: ExtendedDrugApproval[];
   fileName: string;
 }
 
@@ -34,6 +35,68 @@ function extractCancerType(indication: string, productName: string): string {
   return '기타';
 }
 
+function extractGenericName(productName: string): string {
+  const match = productName.match(/\(([^)]+)\)/);
+  return match ? match[1].trim() : '';
+}
+
+function inferCancerTypeFromName(productName: string): string {
+  const name = productName.toLowerCase();
+
+  if (name.includes('다사티닙') || name.includes('다사킨')) return '혈액암';
+  if (name.includes('졸베툭시맙') || name.includes('빌로이')) return '위암';
+
+  return '기타';
+}
+
+function inferMechanismNote(productName: string): string {
+  const name = productName.toLowerCase();
+
+  if (name.includes('다사티닙') || name.includes('다사킨')) return 'BCR-ABL TKI, 표적항암제';
+  if (name.includes('졸베툭시맙') || name.includes('빌로이')) return 'CLDN18.2 표적 단클론항체';
+
+  return '';
+}
+
+function isLikelyAntiCancerDrug(productName: string, indication: string): boolean {
+  const text = `${productName} ${indication}`.toLowerCase();
+
+  const includeKeywords = [
+    '항암',
+    '암',
+    '백혈병',
+    '림프종',
+    '골수종',
+    '다발골수종',
+    'cancer',
+    'oncology',
+    '다사티닙',
+    '다사킨',
+    '졸베툭시맙',
+    '빌로이',
+  ];
+
+  const excludeKeywords = [
+    '피마사르탄',
+    '아토르바스타틴',
+    '에제티미브',
+    '인플루엔자',
+    '미녹시딜',
+    '레비티라세탐',
+    '텔미사르탄',
+    '암로디핀',
+    '보노프라잔',
+    '피타바스타틴',
+    '페노피브레이트',
+  ];
+
+  if (excludeKeywords.some((keyword) => text.includes(keyword))) {
+    return false;
+  }
+
+  return includeKeywords.some((keyword) => text.includes(keyword));
+}
+
 // 컬럼명 매핑
 const COLUMN_MAPPINGS: Record<string, keyof DrugApproval | 'extra'> = {
   '제품명': 'drugName',
@@ -57,6 +120,7 @@ const COLUMN_MAPPINGS: Record<string, keyof DrugApproval | 'extra'> = {
   '암종': 'cancerType',
   
   '허가일': 'approvalDate',
+  '허가일자': 'approvalDate',
   '승인일': 'approvalDate',
   'ITEM_PERMIT_DATE': 'approvalDate',
   
@@ -64,6 +128,8 @@ const COLUMN_MAPPINGS: Record<string, keyof DrugApproval | 'extra'> = {
   
   '품목기준코드': 'id',
   'ITEM_SEQ': 'id',
+  '허가심사유형': 'extra',
+  '전문일반': 'extra',
 };
 
 export async function parseExcelFile(file: File): Promise<ParsedDrugData> {
@@ -87,10 +153,14 @@ export async function parseExcelFile(file: File): Promise<ParsedDrugData> {
         }
 
         // 컬럼 매핑
-        const drugs: DrugApproval[] = jsonData.map((row, index) => {
-          const drug: Partial<DrugApproval> = {
+        const drugs: ExtendedDrugApproval[] = jsonData.map((row, index) => {
+          const drug: Partial<ExtendedDrugApproval> = {
             id: `upload-${index}`,
             status: 'approved',
+            approvalType: '',
+            drugCategory: '',
+            manufactureType: '',
+            notes: '',
           };
 
           // 각 컬럼에서 데이터 추출
@@ -111,15 +181,31 @@ export async function parseExcelFile(file: File): Promise<ParsedDrugData> {
               } else {
                 (drug as Record<string, unknown>)[mappedKey] = String(value || '');
               }
+            } else if (excelCol === '허가심사유형') {
+              drug.approvalType = String(value || '');
+            } else if (excelCol === '전문일반') {
+              drug.drugCategory = String(value || '');
             }
+          }
+
+          if (!drug.genericName && drug.drugName) {
+            drug.genericName = extractGenericName(drug.drugName);
           }
 
           // 암종 자동 추출
           if (!drug.cancerType || drug.cancerType === '') {
-            drug.cancerType = extractCancerType(
+            const extractedCancerType = extractCancerType(
               drug.indication || '',
               drug.drugName || ''
             );
+
+            drug.cancerType = extractedCancerType === '기타'
+              ? inferCancerTypeFromName(drug.drugName || '')
+              : extractedCancerType;
+          }
+
+          if (!drug.notes && drug.drugName) {
+            drug.notes = inferMechanismNote(drug.drugName);
           }
 
           return {
@@ -131,8 +217,13 @@ export async function parseExcelFile(file: File): Promise<ParsedDrugData> {
             cancerType: drug.cancerType || '기타',
             approvalDate: drug.approvalDate || '',
             status: drug.status || 'approved',
-          } as DrugApproval;
-        }).filter(drug => drug.drugName); // 제품명 없는 행 제외
+            approvalType: drug.approvalType || '',
+            drugCategory: drug.drugCategory || '',
+            manufactureType: drug.manufactureType || '',
+            notes: drug.notes || '',
+          } as ExtendedDrugApproval;
+        }).filter(drug => drug.drugName) // 제품명 없는 행 제외
+          .filter(drug => isLikelyAntiCancerDrug(drug.drugName, drug.indication));
 
         toast({
           title: '파일 업로드 성공',
