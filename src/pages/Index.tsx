@@ -32,7 +32,7 @@ const Index = () => {
   // 필터 상태
   const [filters, setFilters] = useState<FilterState>({
     startDate: new Date('2025-12-01'),
-    endDate: new Date('2026-02-27'),
+    endDate: new Date('2026-03-31'),
     cancerType: '전체',
     manufactureType: '전체',
     company: '전체',
@@ -65,19 +65,27 @@ const Index = () => {
     currentData.forEach(d => {
       const ext = d as ExtendedDrugApproval;
       if (ext.notes) {
-        // notes에서 주요 작용기전 키워드 추출
-        const keywords = ['TKI', 'ADC', '억제제', '수용체', 'SERD', '호르몬요법', '표적항암제'];
-        keywords.forEach(keyword => {
-          if (ext.notes?.includes(keyword)) {
-            // 구체적인 기전 추출
-            if (ext.notes.includes('EGFR TKI')) mechanisms.add('EGFR TKI');
-            else if (ext.notes.includes('FLT3 억제제')) mechanisms.add('FLT3 억제제');
-            else if (ext.notes.includes('IDH 억제제')) mechanisms.add('IDH 억제제');
-            else if (ext.notes.includes('안드로겐 수용체 억제제')) mechanisms.add('안드로겐 수용체 억제제');
-            else if (ext.notes.includes('ADC')) mechanisms.add('ADC');
-            else if (ext.notes.includes('SERD')) mechanisms.add('SERD');
+        const mechanismMap: Record<string, string> = {
+          'EGFR TKI': 'EGFR TKI',
+          'BCR-ABL TKI': 'BCR-ABL TKI',
+          'FLT3 억제제': 'FLT3 억제제',
+          'IDH 억제제': 'IDH 억제제',
+          'KRAS G12C 억제제': 'KRAS G12C 억제제',
+          'RANKL 억제제': 'RANKL 억제제',
+          '안드로겐 수용체 억제제': '안드로겐 수용체 억제제',
+          'CLDN18.2 표적': 'CLDN18.2 표적 단클론항체',
+          'HER2 이중특이적 항체': 'HER2 이중특이적 항체',
+          'TROP2 표적 ADC': 'TROP2 표적 ADC',
+          'BCMA 표적 ADC': 'BCMA 표적 ADC',
+          'FRα 표적 ADC': 'FRα 표적 ADC',
+          'ADC': 'ADC',
+          'SERD': 'SERD',
+        };
+        for (const [keyword, label] of Object.entries(mechanismMap)) {
+          if (ext.notes.includes(keyword)) {
+            mechanisms.add(label);
           }
-        });
+        }
       }
     });
     return [...mechanisms].sort();
@@ -131,7 +139,7 @@ const Index = () => {
   const handleReset = useCallback(() => {
     setFilters({
       startDate: new Date('2025-12-01'),
-      endDate: new Date('2026-02-27'),
+      endDate: new Date('2026-03-31'),
       cancerType: '전체',
       manufactureType: '전체',
       company: '전체',
@@ -311,7 +319,7 @@ const Index = () => {
         {/* Footer */}
         <footer className="text-center text-sm text-muted-foreground pt-8 mt-8 border-t">
           <p>본 데이터는 식품의약품안전처 공개자료(공공데이터포털)를 기반으로 제작되었습니다.</p>
-          <p className="mt-1">마지막 업데이트: 2026년 2월 27일</p>
+          <p className="mt-1">마지막 업데이트: 2026년 3월 31일</p>
         </footer>
       </main>
 

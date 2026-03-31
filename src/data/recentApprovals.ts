@@ -1,3 +1,4 @@
+
 import { DrugApproval } from './drugData';
 
 // 확장된 약품 정보 인터페이스
@@ -10,10 +11,74 @@ export interface ExtendedDrugApproval extends DrugApproval {
   notes?: string;                 // 비고
 }
 
-// 2025년 12월 1일 ~ 2026년 2월 13일 항암제 승인 현황 (공공데이터 API + MFDS 의약품안전나라 기반)
+// 2025년 12월 1일 ~ 2026년 3월 31일 항암제 승인 현황 (공공데이터 API + MFDS 의약품안전나라 기반)
 export const recentApprovals: ExtendedDrugApproval[] = [
   {
-    id: 'xlsx-20260227-boryung-dasatinib-100',
+    id: '202600898',
+    drugName: '주노드프리필드시린지주(데노수맙)',
+    genericName: '데노수맙 (Denosumab)',
+    company: '대원제약(주)',
+    indication: '다발성 골수종 및 고형암의 골전이 환자에서 골격계 증상 발생 위험 감소, 골거대세포종 치료',
+    cancerType: '다발성골수종',
+    approvalDate: '2026-03-31',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '자료제출의약품(유전자재조합의약품 및 세포배양의약품)',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: 'RANKL 억제제, 동등생물의약품(엑스지바 대조)',
+  },
+  {
+    id: '202600793',
+    drugName: '지헤라주300mg(자니다타맙)',
+    genericName: '자니다타맙 (Zanidatamab)',
+    company: '비원메디슨코리아(유)',
+    indication: '이전에 적어도 1회 이상 전신요법 치료를 받은 적이 있는 절제 불가능, 국소 진행성 또는 전이성 HER2 양성(IHC 3+) 담도암 성인 환자의 단독요법',
+    cancerType: '담도암',
+    approvalDate: '2026-03-19',
+    status: 'approved',
+    manufacturingCountry: '미국',
+    consignedManufacturer: 'Zymeworks Inc.',
+    approvalType: '희귀',
+    drugCategory: '전문의약품',
+    manufactureType: '수입',
+    notes: 'HER2 이중특이적 항체, GIFT 40호 제품',
+  },
+  {
+    id: '202600792',
+    drugName: '엔자론연질캡슐40밀리그램(엔잘루타마이드)',
+    genericName: '엔잘루타마이드 (Enzalutamide)',
+    company: '한미약품(주)',
+    indication: '거세저항성 전이성 전립선암 또는 거세저항성 비전이성 전립선암 치료',
+    cancerType: '전립선암',
+    approvalDate: '2026-03-18',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '제네릭',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: '안드로겐 수용체 억제제, 국내 최초 국산 엑스탄디 제네릭',
+  },
+  {
+    id: '202600700',
+    drugName: '다트로웨이주100mg(다토포타맙데룩스테칸)',
+    genericName: '다토포타맙데룩스테칸 (Datopotamab Deruxtecan)',
+    company: '한국다이이찌산쿄(주)',
+    indication: '절제 불가능한 또는 전이성인 HR 양성, HER2 음성(IHC 0, IHC 1+ 또는 IHC 2+/ISH-) 유방암으로, 이전에 내분비 기반 치료와 진행성 단계에서 전신 화학요법 치료를 받은 환자의 치료',
+    cancerType: '유방암',
+    approvalDate: '2026-03-09',
+    status: 'approved',
+    manufacturingCountry: '일본, 미국',
+    consignedManufacturer: 'Daiichi Sankyo Inc., AstraZeneca',
+    approvalType: '신약(유전자재조합의약품 및 세포배양의약품)',
+    drugCategory: '전문의약품',
+    manufactureType: '수입',
+    notes: 'TROP2 표적 ADC(항체-약물 접합체), 엔허투 자매약',
+  },
+  {
+    id: '202600609',
     drugName: '다사킨정100밀리그램(다사티닙)',
     genericName: '다사티닙 (Dasatinib)',
     company: '(주)보령',
@@ -29,7 +94,7 @@ export const recentApprovals: ExtendedDrugApproval[] = [
     notes: 'BCR-ABL TKI, 표적항암제',
   },
   {
-    id: 'xlsx-20260227-boryung-dasatinib-80',
+    id: '202600610',
     drugName: '다사킨정80밀리그램(다사티닙)',
     genericName: '다사티닙 (Dasatinib)',
     company: '(주)보령',
@@ -45,7 +110,7 @@ export const recentApprovals: ExtendedDrugApproval[] = [
     notes: 'BCR-ABL TKI, 표적항암제',
   },
   {
-    id: 'xlsx-20260227-boryung-dasatinib-70',
+    id: '202600611',
     drugName: '다사킨정70밀리그램(다사티닙)',
     genericName: '다사티닙 (Dasatinib)',
     company: '(주)보령',
@@ -61,7 +126,7 @@ export const recentApprovals: ExtendedDrugApproval[] = [
     notes: 'BCR-ABL TKI, 표적항암제',
   },
   {
-    id: 'xlsx-20260227-boryung-dasatinib-50',
+    id: '202600612',
     drugName: '다사킨정50밀리그램(다사티닙)',
     genericName: '다사티닙 (Dasatinib)',
     company: '(주)보령',
@@ -77,7 +142,7 @@ export const recentApprovals: ExtendedDrugApproval[] = [
     notes: 'BCR-ABL TKI, 표적항암제',
   },
   {
-    id: 'xlsx-20260227-boryung-dasatinib-20',
+    id: '202600613',
     drugName: '다사킨정20밀리그램(다사티닙)',
     genericName: '다사티닙 (Dasatinib)',
     company: '(주)보령',
@@ -93,7 +158,7 @@ export const recentApprovals: ExtendedDrugApproval[] = [
     notes: 'BCR-ABL TKI, 표적항암제',
   },
   {
-    id: 'xlsx-20260227-astellas-zolbetuximab-300',
+    id: '202600619',
     drugName: '빌로이주300밀리그램(졸베툭시맙)',
     genericName: '졸베툭시맙 (Zolbetuximab)',
     company: '한국아스텔라스제약(주)',
@@ -101,8 +166,8 @@ export const recentApprovals: ExtendedDrugApproval[] = [
     cancerType: '위암',
     approvalDate: '2026-02-27',
     status: 'approved',
-    manufacturingCountry: '해외',
-    consignedManufacturer: '',
+    manufacturingCountry: '아일랜드, 독일, 미국',
+    consignedManufacturer: 'Astellas Ireland Co. Ltd., Baxter Oncology GmbH, Patheon Biologics LLC',
     approvalType: '자료제출의약품(유전자재조합의약품 및 세포배양의약품)',
     drugCategory: '전문의약품',
     manufactureType: '수입',
@@ -401,8 +466,8 @@ export const recentApprovals: ExtendedDrugApproval[] = [
 // 기간 정보
 export const dateRange = {
   start: '2025-12-01',
-  end: '2026-02-27',
-  label: '2025년 12월 ~ 2026년 2월',
+  end: '2026-03-31',
+  label: '2025년 12월 ~ 2026년 3월',
 };
 
 // 암종별 통계

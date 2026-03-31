@@ -17,8 +17,8 @@ const DASHBOARD_URL = 'https://mfds-cancer-watch.lovable.app';
 
 // 대시보드 필터 기간
 const FILTER_START = '2026-02-01';
-const FILTER_END = '2026-02-26';
-const DATE_RANGE_TEXT = '26-02-01 ~ 26-02-26';
+const FILTER_END = '2026-02-28';
+const DATE_RANGE_TEXT = '26-02-01 ~ 26-02-28';
 
 // 파일명: MFDS_항암제_승인현황_2026-02-01_2026-02-26_20260227.xlsx
 const today = new Date().toISOString().split('T')[0].replace(/-/g, '');
@@ -108,6 +108,102 @@ const drugs = [
     manufactureType: '수입',
     notes: '경구 SERD, ESR1 변이 표적',
   },
+  {
+    id: '202600609',
+    drugName: '다사킨정100밀리그램(다사티닙)',
+    genericName: '다사티닙 (Dasatinib)',
+    company: '(주)보령',
+    indication: '필라델피아 염색체 양성(Ph+) 만성골수성백혈병(CML) 및 급성림프구성백혈병(ALL) 치료 계열',
+    cancerType: '혈액암',
+    approvalDate: '2026-02-27',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '제네릭',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: 'BCR-ABL TKI, 표적항암제',
+  },
+  {
+    id: '202600610',
+    drugName: '다사킨정80밀리그램(다사티닙)',
+    genericName: '다사티닙 (Dasatinib)',
+    company: '(주)보령',
+    indication: '필라델피아 염색체 양성(Ph+) 만성골수성백혈병(CML) 및 급성림프구성백혈병(ALL) 치료 계열',
+    cancerType: '혈액암',
+    approvalDate: '2026-02-27',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '제네릭',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: 'BCR-ABL TKI, 표적항암제',
+  },
+  {
+    id: '202600611',
+    drugName: '다사킨정70밀리그램(다사티닙)',
+    genericName: '다사티닙 (Dasatinib)',
+    company: '(주)보령',
+    indication: '필라델피아 염색체 양성(Ph+) 만성골수성백혈병(CML) 및 급성림프구성백혈병(ALL) 치료 계열',
+    cancerType: '혈액암',
+    approvalDate: '2026-02-27',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '제네릭',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: 'BCR-ABL TKI, 표적항암제',
+  },
+  {
+    id: '202600612',
+    drugName: '다사킨정50밀리그램(다사티닙)',
+    genericName: '다사티닙 (Dasatinib)',
+    company: '(주)보령',
+    indication: '필라델피아 염색체 양성(Ph+) 만성골수성백혈병(CML) 및 급성림프구성백혈병(ALL) 치료 계열',
+    cancerType: '혈액암',
+    approvalDate: '2026-02-27',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '제네릭',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: 'BCR-ABL TKI, 표적항암제',
+  },
+  {
+    id: '202600613',
+    drugName: '다사킨정20밀리그램(다사티닙)',
+    genericName: '다사티닙 (Dasatinib)',
+    company: '(주)보령',
+    indication: '필라델피아 염색체 양성(Ph+) 만성골수성백혈병(CML) 및 급성림프구성백혈병(ALL) 치료 계열',
+    cancerType: '혈액암',
+    approvalDate: '2026-02-27',
+    status: 'approved',
+    manufacturingCountry: '한국',
+    consignedManufacturer: '',
+    approvalType: '제네릭',
+    drugCategory: '전문의약품',
+    manufactureType: '제조',
+    notes: 'BCR-ABL TKI, 표적항암제',
+  },
+  {
+    id: '202600619',
+    drugName: '빌로이주300밀리그램(졸베툭시맙)',
+    genericName: '졸베툭시맙 (Zolbetuximab)',
+    company: '한국아스텔라스제약(주)',
+    indication: 'CLDN18.2 양성 위암/위식도접합부 선암 계열 치료',
+    cancerType: '위암',
+    approvalDate: '2026-02-27',
+    status: 'approved',
+    manufacturingCountry: '아일랜드, 독일, 미국',
+    consignedManufacturer: 'Astellas Ireland Co. Ltd., Baxter Oncology GmbH, Patheon Biologics LLC',
+    approvalType: '자료제출의약품(유전자재조합의약품 및 세포배양의약품)',
+    drugCategory: '전문의약품',
+    manufactureType: '수입',
+    notes: 'CLDN18.2 표적 단클론항체',
+  },
 ];
 
 // 허가일 오름차순 정렬
@@ -129,6 +225,8 @@ drugs.forEach((d) => {
     if (d.notes.includes('SERD')) mechanismStats['SERD'] = (mechanismStats['SERD'] || 0) + 1;
     if (d.notes.includes('RANKL')) mechanismStats['RANKL 억제제'] = (mechanismStats['RANKL 억제제'] || 0) + 1;
     if (d.notes.includes('KRAS')) mechanismStats['KRAS G12C 억제제'] = (mechanismStats['KRAS G12C 억제제'] || 0) + 1;
+    if (d.notes.includes('BCR-ABL TKI')) mechanismStats['BCR-ABL TKI'] = (mechanismStats['BCR-ABL TKI'] || 0) + 1;
+    if (d.notes.includes('CLDN18.2')) mechanismStats['CLDN18.2 표적'] = (mechanismStats['CLDN18.2 표적'] || 0) + 1;
   }
 });
 
